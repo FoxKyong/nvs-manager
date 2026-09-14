@@ -1,0 +1,15 @@
+{
+  "name": "esp-idf-nvs",
+  "version": "5.5.5",
+  "description": "ESP-IDF nvs_flash from tag v5.5.5, vendored for the desktop build of NVS Manager",
+  "license": "Apache-2.0",
+  "platforms": "native",
+  "build": {
+    "includeDir": "include",
+    "srcDir": "src",
+    "flags": [
+      "-DESP_PLATFORM",
+      "-DLINUX_TARGET"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Reads the device's NVS partition into a local file (mode 600) and prints
+# its SHA-256. Read-only; esptool restarts the device afterwards.
+#
+#   tools/hw-backup-nvs RUNNER OUTPUT.bin
+#
+# The dump can hold Wi-Fi passwords and tokens: keep it out of the repository.
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+out="${2:-}"
+[[ -n "$out" ]] || hw_die "usage: hw-backup-nvs RUNNER OUTPUT.bin"
+[[ ! -e "$out" ]] || hw_die "$out exists; not overwriting it"
+
+remote="$(hw_ssh 'umask 077; mktemp')"
+trap 'hw_ssh "rm -f $remote" || true' EXIT
+
+hw_ssh "$HW_ESPTOOL --port $HW_PORT_Q read-flash $HW_NVS_OFFSET $HW_NVS_SIZE $remote" >/dev/null ||
+    hw_die "esptool could not read the NVS partition"
+(
+    umask 077
+    scp -q "$HW_SSH:$remote" "$out"
+)
+chmod 600 "$out"
+
+size="$(stat -c %s "$out")"
+[[ "$size" -eq $((HW_NVS_SIZE)) ]] || hw_die "read $size bytes, expected $((HW_NVS_SIZE))"
+sha256sum "$out"

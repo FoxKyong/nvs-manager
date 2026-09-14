@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Installs an app-only image through Launcher's serial console on the device.
+#
+#   tools/hw-install-launcher RUNNER [FIRMWARE.bin] [--replace LABEL] [--wait-replug]
+#
+# FIRMWARE defaults to .pio/build/cardputer/firmware.bin. Launcher's console is
+# reachable only during its start screen, which appears on power-on. With an
+# app already installed, pass --wait-replug and unplug the USB cable and plug
+# it back in (battery switched off). Details: tools/runner/launcher_install.py.
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+shift
+firmware="$HW_ROOT/.pio/build/cardputer/firmware.bin"
+if [[ $# -gt 0 && "$1" != -* ]]; then
+    firmware="$1"
+    shift
+fi
+[[ -f "$firmware" ]] || hw_die "missing $firmware"
+
+hw_sync
+remote="$(hw_ssh 'mktemp')"
+trap 'hw_ssh "rm -f $remote" || true' EXIT
+scp -q "$firmware" "$HW_SSH:$remote"
+hw_ssh_interactive "$HW_PY $HW_DIR/tools/launcher_install.py $HW_PORT_Q $remote $(hw_quote "$@")"

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Flashes a standalone build in parts and resets the device once. NVS
+# (0x9000-0xDFFF) is never written.
+#
+#   tools/hw-upload RUNNER [BUILD_DIR] [--replace-layout]
+#
+# BUILD_DIR defaults to .pio/build/cardputer. The parts go to 0x0 (bootloader),
+# 0x8000 (partition table), 0xE000 (boot_app0) and 0x10000 (app). Never flash
+# firmware.factory.bin instead: it starts at 0x0 and wipes NVS.
+#
+# The device's current partition table must equal the built one. A different
+# layout, such as Launcher's, would lose what lives behind it (Launcher and
+# its apps); --replace-layout writes anyway. To install under Launcher, use
+# tools/hw-install-launcher.
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+shift
+build="$HW_ROOT/.pio/build/cardputer"
+replace_layout=false
+for a in "$@"; do
+    case "$a" in
+    --replace-layout) replace_layout=true ;;
+    -*) hw_die "unknown option: $a" ;;
+    *) build="$a" ;;
+    esac
+done
+
+boot_app0="${PLATFORMIO_CORE_DIR:-$HOME/.platformio}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin"
+for f in "$build/bootloader.bin" "$build/partitions.bin" "$build/firmware.bin" "$boot_app0"; do
+    [[ -f "$f" ]] || hw_die "missing $f (build first; set PLATFORMIO_CORE_DIR if the core is elsewhere)"
+done
+
+hw_sync
+remote="$(hw_ssh 'mktemp -d')"
+trap 'hw_ssh "rm -rf $remote" || true' EXIT
+scp -q "$build/bootloader.bin" "$build/partitions.bin" "$build/firmware.bin" "$boot_app0" "$HW_SSH:$remote/"
+
+hw_ssh "$HW_ESPTOOL --port $HW_PORT_Q --after no-reset read-flash 0x8000 0xc00 $remote/device-table.bin" >/dev/null ||
+    hw_die "could not read the device's partition table"
+if ! hw_ssh "cmp -s -n 3072 $remote/device-table.bin $remote/partitions.bin"; then
+    if $replace_layout; then
+        echo "replacing the device's partition layout (--replace-layout)"
+    else
+        hw_ssh "$HW_PY $HW_DIR/tools/serial_tool.py $HW_PORT_Q reset" || true
+        hw_die "the device has a different partition layout (Launcher?); nothing written. See the header of this script."
+    fi
+fi
+
+hw_ssh "$HW_ESPTOOL --port $HW_PORT_Q --after no-reset write-flash \
+    0x0 $remote/bootloader.bin 0x8000 $remote/partitions.bin \
+    0xe000 $remote/boot_app0.bin 0x10000 $remote/firmware.bin" | grep -E '^(Wrote|Hash)' ||
+    hw_die "write failed"
+hw_ssh "$HW_PY $HW_DIR/tools/serial_tool.py $HW_PORT_Q reset"
+echo "flashed and reset"

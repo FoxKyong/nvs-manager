@@ -1,0 +1,37 @@
+# --- Build output -----------------------------------------------------------
+# PlatformIO build and library cache; reproducible from platformio.ini.
+.pio/
+# Release images are attached to GitHub releases, not committed.
+dist/
+
+__pycache__/
+
+# --- Editors / OS -----------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# --- Local hardware runner configuration ------------------------------------
+# Real runner files name concrete hosts, users and serial ports of one lab.
+# Only the *.example variant belongs in the repository.
+hardware-runners.conf
+tools/*.local.conf
+logs/
+
+# --- Device data: may contain credentials -----------------------------------
+# NVS dumps and exports from real devices can hold Wi-Fi passwords, API tokens
+# and BLE pairing keys. Never commit them, not even from a test device.
+NVSManager/
+backups/
+exports/
+*.nvs.bin
+*-nvs-*.bin
+
+# --- Secrets ----------------------------------------------------------------
+*.key
+*.pem
+*.crt
+*.p12
+.env
+secrets*

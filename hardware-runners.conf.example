@@ -1,0 +1,15 @@
+# Hardware runners for tools/hw-*. Copy this file to hardware-runners.conf
+# (git-ignored) and fill it in. One runner per line:
+#
+#   name  ssh-target  serial-port  runner-dir
+#
+# ssh-target   anything ssh accepts: user@host, or a Host alias from ~/.ssh/config
+# serial-port  the device on the runner; the /dev/serial/by-id/ name survives resets
+# runner-dir   on the runner, relative to the SSH user's home; holds a Python venv
+#              with esptool and pyserial:
+#                python3 -m venv runner-dir/venv
+#                runner-dir/venv/bin/pip install esptool pyserial
+#
+# A different file can be named with NVSM_RUNNERS_CONF.
+
+cardputer-lab  runner.example  /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_XX:XX:XX:XX:XX:XX-if00  nvsm-runner

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Streams the device log from a runner. Leaves the device running unless
+# --reset is given; follows it through reboots.
+#
+#   tools/hw-monitor RUNNER [SECONDS] [--reset]
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+shift
+args=()
+for a in "$@"; do
+    case "$a" in
+    --reset) args+=(--reset) ;;
+    *[!0-9.]* | "") hw_die "unknown argument: $a" ;;
+    *) args+=(--seconds "$a") ;;
+    esac
+done
+
+hw_sync
+hw_ssh_interactive "$HW_PY $HW_DIR/tools/serial_tool.py $HW_PORT_Q monitor $(hw_quote "${args[@]}")"

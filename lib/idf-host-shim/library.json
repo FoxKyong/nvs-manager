@@ -1,0 +1,11 @@
+{
+  "name": "idf-host-shim",
+  "version": "0.1.0",
+  "description": "Minimal ESP-IDF headers and a RAM-backed esp_partition so ESP-IDF nvs_flash runs on a desktop",
+  "license": "MIT",
+  "platforms": "native",
+  "build": {
+    "includeDir": "include",
+    "srcDir": "src"
+  }
+}

@@ -1,0 +1,37 @@
+#pragma once
+
+#include <string>
+
+#include <esp_err.h>
+
+#include "nvs/NvsTypes.h"
+
+namespace nvsm {
+
+struct WriteResult {
+    esp_err_t err = ESP_OK;
+    const char *step = ""; // "open", "erase", "set", "commit" or "verify" when err != ESP_OK
+    bool ok() const { return err == ESP_OK; }
+};
+
+// The only code in the application that changes NVS. Every call is one
+// explicit user action: open read-write, change, commit, close, then read
+// back to verify. A result is ESP_OK only when all of that succeeded.
+class NvsWriter {
+public:
+    explicit NvsWriter(std::string label) : label_(std::move(label)) {}
+
+    WriteResult eraseKey(const std::string &ns, const std::string &key) const;
+
+    // Erases every key of the namespace. The namespace entry itself stays:
+    // the public API offers no way to remove it.
+    WriteResult eraseNamespace(const std::string &ns) const;
+
+    // Integers and strings only; the key keeps its type.
+    WriteResult setValue(const std::string &ns, const std::string &key, const Value &value) const;
+
+private:
+    std::string label_;
+};
+
+} // namespace nvsm

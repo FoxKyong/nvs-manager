@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Resets the device once (RTS pulse). Under Launcher this starts the installed
+# app again; only a power-on shows Launcher.
+#
+#   tools/hw-reset RUNNER
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+hw_sync
+hw_ssh "$HW_PY $HW_DIR/tools/serial_tool.py $HW_PORT_Q reset"
+echo "reset sent"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Checks that a runner answers, has its tools and sees the device.
+#
+#   tools/hw-probe RUNNER [--chip]
+#
+# Without --chip the device is not touched. --chip asks esptool for the chip
+# and flash size, which resets the device.
+source "$(dirname "$0")/hw-lib.sh"
+
+hw_load "${1:-}"
+chip=false
+[[ "${2:-}" == "--chip" ]] && chip=true
+
+echo "runner:   $1 ($HW_SSH)"
+hw_ssh true || hw_die "cannot reach the runner over SSH"
+hw_ssh "$HW_PY -c 'import serial; print(\"pyserial:\", serial.__version__)'" || hw_die "no pyserial in $HW_DIR/venv"
+hw_ssh "printf 'esptool:  '; $HW_ESPTOOL version | head -n 1" || hw_die "no esptool in $HW_DIR/venv"
+if hw_ssh "test -e $HW_PORT_Q"; then
+    echo "device:   $HW_PORT"
+else
+    hw_die "device not present: $HW_PORT"
+fi
+if $chip; then
+    hw_ssh "$HW_ESPTOOL --port $HW_PORT_Q flash-id" | grep -E '^(Chip type|Features|Crystal|MAC|Detected flash size)' || true
+fi

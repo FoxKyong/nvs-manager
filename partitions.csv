@@ -1,0 +1,13 @@
+# Standalone partition table for 8 MB ESP32-S3 devices (Cardputer family).
+#
+# nvs and otadata sit exactly where Launcher puts them. Switching a device
+# between Launcher and the standalone image must never move or resize the NVS
+# that is being diagnosed — see docs/RESEARCH.md, section 5.
+#
+# Name,   Type, SubType, Offset,   Size,     Flags
+nvs,      data, nvs,     0x9000,   0x5000,
+otadata,  data, ota,     0xE000,   0x2000,
+app0,     app,  ota_0,   0x10000,  0x300000,
+# The Arduino core is built with core dumps to flash and logs an error at
+# boot when this partition is missing. Same place as in Launcher's table.
+coredump, data, coredump,0x7F0000, 0x10000,
