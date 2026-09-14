@@ -4,6 +4,15 @@ On-device inspector and manager for the ESP32 NVS (Non-Volatile Storage), for th
 
 **Inspect first. Modify explicitly. Never erase automatically.**
 
+<p>
+  <img src="docs/images/dashboard.png" width="360" alt="Dashboard: NVS health LOW, 84 of 504 entries available">
+  <img src="docs/images/namespaces.png" width="360" alt="Namespaces sorted by size, labelled APP, SYS and LNCH">
+  <img src="docs/images/keys.png" width="360" alt="Keys of a namespace with types and sizes">
+  <img src="docs/images/key-detail.png" width="360" alt="Key detail with the value shown">
+</p>
+
+Screenshots from the desktop build, with made-up example data.
+
 ## Why
 
 Firmware images that run on the same device share one small NVS partition. On a device with a firmware launcher, every application leaves its namespaces behind until the partition runs out of entries. Applications that do not check NVS write results then fail in ways that look unrelated, such as settings that silently reset after a reboot.
