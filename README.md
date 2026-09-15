@@ -84,6 +84,10 @@ Release files, from the [releases page](../../releases):
 
 [Launcher](https://github.com/bmorcelli/Launcher) installs the app into its own app partition. It keeps the NVS partition, so NVS Manager sees exactly the data the other apps use.
 
+**From Launcher's online catalog:** open `OTA`, find **NVS Manager for Cardputer & ADV** and install it. Launcher downloads the image published on M5Burner and writes only the app from it.
+
+**From the SD card:**
+
 1. Copy `nvs-manager-<version>-cardputer-launcher.bin` to the SD card.
 2. In Launcher, open `SD`, select the file and choose `Install`.
 
@@ -107,6 +111,10 @@ The partition table keeps NVS at `0x9000` with `0x5000` bytes, as Launcher does,
 ### Full image
 
 `nvs-manager-<version>-cardputer-full-ERASES-NVS.bin` is a single image written at `0x0`. **Writing it erases the NVS partition,** because the image is blank there. It suits a clean device only; to inspect existing data, use one of the other two ways.
+
+### M5Burner
+
+The same full image is published in [M5Burner](https://docs.m5stack.com/en/uiflow/m5burner/intro) as **NVS Manager for Cardputer & ADV** (device type Cardputer). M5Burner writes it from `0x0`, so burning it there **erases the NVS partition** as well. To keep the existing data, install it through Launcher instead.
 
 ## Using it
 
