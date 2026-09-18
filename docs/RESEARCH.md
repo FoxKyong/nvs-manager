@@ -321,4 +321,10 @@ Answered since phase 1:
 - a changed byte, another device's `device_id` and an identical backup are refused;
 - a 0.9.0-style manifest is accepted with a warning.
 
-On hardware: **open** until tested on the test Cardputer.
+**Verified on hardware** (test Cardputer v1.0, under Launcher 2.9.1, exFAT card; the owner operated the device). The steps, in order:
+
+1. A raw backup.
+2. Deleting one APP namespace, which freed one entry.
+3. Restoring the backup. The automatic backup before the restore held the state after the deletion.
+
+A flash read of the NVS afterwards matched the restored backup's SHA-256 and the state before the test. `tools/nvs-diff.py` found no changed key.
