@@ -35,6 +35,7 @@ void writeHeader(util::JsonWriter &j, const NvsModel &model) {
     j.key("format").i64(kFormatVersion);
     j.key("device").str(platform::deviceName());
     j.key("chip").str(platform::chipModel());
+    j.key("device_id").str(platform::deviceId());
     j.key("time").null(); // no real-time clock
     j.key("uptime_ms").u64(platform::millis());
 

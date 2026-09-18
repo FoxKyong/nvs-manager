@@ -71,6 +71,8 @@ public:
     ChangeOutcome eraseKey(const std::string &ns, const std::string &key);
     ChangeOutcome eraseNamespace(const std::string &ns);
     ChangeOutcome setValue(const std::string &ns, const std::string &key, const nvsm::Value &value);
+    // Replaces the whole partition with a checked raw image; `source` names it in the log.
+    ChangeOutcome restorePartition(const std::vector<uint8_t> &image, const std::string &source);
 
 private:
     ChangeOutcome runChange(const char *tag, const std::string &target,

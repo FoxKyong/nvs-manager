@@ -71,5 +71,12 @@ bool storageExists(const std::string &path);
 // truncated file under the final name.
 bool storageWrite(const std::string &path, const uint8_t *data, size_t size);
 bool storageRead(const std::string &path, std::vector<uint8_t> &out);
+// Names (not paths) of the files directly in `dir`, in no particular order.
+// False when the directory cannot be read, for example because it does not exist.
+bool storageList(const std::string &dir, std::vector<std::string> &names);
+
+// Short identifier of this device for backup manifests, so a restore can tell
+// a backup of another device. A hash of the MAC address, not the MAC itself.
+std::string deviceId();
 
 } // namespace platform

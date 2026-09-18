@@ -304,3 +304,21 @@ Answered since phase 1:
 - the runtime proof of the boot guard (section 3);
 - how the iterator reports chunked blobs (section 2);
 - the real NVS library in the native build (section 8).
+
+## 11. Restoring a raw backup (1.0.0)
+
+**Design.** The brief left restore out of 0.1 as the riskiest operation. The implementation keeps every earlier safety rule:
+
+- **Checks before writing.** The backup's manifest must exist and match the file's size and SHA-256, the partition label, offset and size, and an unencrypted NVS. Every initialised page must carry a known state and a header CRC computed the way `nvs::Page::Header::calculateCrc32` does. A backup identical to the current NVS is refused as having nothing to restore.
+- **Device check.** From 1.0.0, manifests record `device_id`, the first 8 bytes of a SHA-256 over a fixed prefix and the MAC address. A mismatch blocks the restore, because NVS holds per-device PHY calibration and pairings. Manifests from 0.9.0 have no `device_id`; they only get a warning. The hash is not a secret: the MAC address space is small enough to search.
+- **Undo first.** Before writing, the current NVS is saved as a new raw backup with its manifest. If that fails, nothing is written.
+- **Writing.** `nvs_flash_deinit_partition`, then for each 4 KiB sector: erase, write, read back and compare, then `nvs_flash_init_partition`. The boot guard refuses only a single erase of the whole partition (section 3), so it stays active. Opening the partition afterwards may complete a page move that the backup caught in progress, as NVS does after a power loss.
+
+**Verified in the desktop build** (ESP-IDF v5.5.5 `nvs_flash` over a synthetic image):
+
+- backup, delete a namespace, restore: a raw backup taken afterwards is byte-identical to the one restored;
+- the automatic backup holds the state just before the restore;
+- a changed byte, another device's `device_id` and an identical backup are refused;
+- a 0.9.0-style manifest is accepted with a warning.
+
+On hardware: **open** until tested on the test Cardputer.

@@ -7,6 +7,7 @@
 #include "platform/Platform.h"
 #include "ui/ConfirmScreen.h"
 #include "ui/Draw.h"
+#include "ui/RestoreScreen.h"
 #include "ui/ResultScreen.h"
 #include "ui/UiController.h"
 
@@ -22,6 +23,7 @@ constexpr Option kOptions[] = {
     {"Export metadata", "JSON: namespaces, keys, types, sizes. No values."},
     {"Export with values", "JSON with every readable value. Sensitive."},
     {"Raw backup", "The partition byte for byte, with a SHA-256 manifest."},
+    {"Restore raw backup", "Write a raw backup back into NVS."},
 };
 constexpr size_t kOptionCount = sizeof kOptions / sizeof kOptions[0];
 
@@ -80,6 +82,7 @@ void BackupScreen::run(size_t option) {
         ui_.push(std::unique_ptr<Screen>(new ConfirmScreen(ui_, std::move(req))));
         break;
     }
+    case 3: ui_.push(std::unique_ptr<Screen>(new RestoreListScreen(ui_))); break;
     default: break;
     }
 }
@@ -110,17 +113,17 @@ void BackupScreen::draw(lgfx::LovyanGFX &g) {
     const bool mounted = platform::storageMounted();
     drawHeader(g, "Backup and export", mounted ? "SD ok" : "no SD");
 
-    constexpr int kOptionH = 26;
+    constexpr int kOptionH = 22; // four options and the status line above the footer
     int y = theme::kHeaderH + 2;
     for (size_t i = 0; i < kOptionCount; ++i) {
         if (i == selected_) g.fillRect(0, y, w, kOptionH, theme::kSelection);
         g.setTextDatum(textdatum_t::top_left);
         g.setFont(theme::fontNormal());
         g.setTextColor(mounted ? theme::kText : theme::kTextDim);
-        g.drawString(kOptions[i].title, 4, y + 1);
+        g.drawString(kOptions[i].title, 4, y);
         g.setFont(theme::fontSmall());
         g.setTextColor(theme::kTextDim);
-        g.drawString(clipText(g, kOptions[i].detail, w - 8).c_str(), 4, y + 14);
+        g.drawString(clipText(g, kOptions[i].detail, w - 8).c_str(), 4, y + 12);
         y += kOptionH + 1;
     }
 

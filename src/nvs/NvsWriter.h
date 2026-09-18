@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
+#include <vector>
 
 #include <esp_err.h>
 
@@ -29,6 +31,11 @@ public:
 
     // Integers and strings only; the key keeps its type.
     WriteResult setValue(const std::string &ns, const std::string &key, const Value &value) const;
+
+    // Replaces the whole partition with a raw image of the same size: closes
+    // NVS, then erases, writes and reads back one 4 KiB sector at a time, and
+    // opens NVS again. The image must already be checked (nvs/NvsImage.h).
+    WriteResult restorePartition(const std::vector<uint8_t> &image) const;
 
 private:
     std::string label_;

@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include <string>
+#include <esp_mac.h>
 #include <esp_system.h>
 #include <lgfx/v1/panel/Panel_ST7789.hpp>
 #include <utility/Keyboard/Keyboard.h>
@@ -17,6 +18,7 @@
 #include <utility/Keyboard/KeyboardReader/TCA8418.h>
 
 #include "nvs/NvsBootGuard.h"
+#include "util/Sha256.h"
 
 namespace platform {
 namespace {
@@ -300,6 +302,30 @@ bool storageRead(const std::string &path, std::vector<uint8_t> &out) {
     const int got = out.empty() ? 0 : file.read(out.data(), out.size());
     file.close();
     return got == static_cast<int>(out.size());
+}
+
+bool storageList(const std::string &dir, std::vector<std::string> &names) {
+    names.clear();
+    if (!g_sdMounted) return false;
+    FsFile folder = g_sd.open(dir.c_str(), O_RDONLY);
+    if (!folder.isOpen() || !folder.isDir()) return false;
+    FsFile file;
+    char name[64];
+    while (file.openNext(&folder, O_RDONLY)) {
+        if (!file.isDir() && file.getName(name, sizeof name) > 0) names.push_back(name);
+        file.close();
+    }
+    folder.close();
+    return true;
+}
+
+std::string deviceId() {
+    uint8_t mac[6] = {};
+    if (esp_efuse_mac_get_default(mac) != ESP_OK) return "";
+    std::string input = "NVS Manager device ";
+    input.append(reinterpret_cast<const char *>(mac), sizeof mac);
+    const auto digest = util::sha256(reinterpret_cast<const uint8_t *>(input.data()), input.size());
+    return util::toHex(digest.data(), 8);
 }
 
 const char *deviceName() { return g_isAdv ? "Cardputer ADV" : "Cardputer"; }

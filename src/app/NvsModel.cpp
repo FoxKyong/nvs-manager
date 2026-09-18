@@ -115,6 +115,11 @@ ChangeOutcome NvsModel::setValue(const std::string &ns, const std::string &key, 
                      [&]() { return writer_.setValue(ns, key, value); });
 }
 
+ChangeOutcome NvsModel::restorePartition(const std::vector<uint8_t> &image, const std::string &source) {
+    return runChange("RESTORE", "partition=" + label() + " from=" + source,
+                     [&]() { return writer_.restorePartition(image); });
+}
+
 void NvsModel::logReport() const {
     for (const auto &p : nvsm::NvsReader::findPartitions()) {
         platform::logf("NVS", "partition %s @0x%06x size 0x%x%s", p.label.c_str(), static_cast<unsigned>(p.address),

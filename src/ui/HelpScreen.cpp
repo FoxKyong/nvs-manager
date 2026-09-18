@@ -32,13 +32,17 @@ constexpr const char *kParagraphs[] = {
     "an export with values, or a raw copy of the partition with a SHA-256 manifest. Files are numbered because "
     "the device has no clock. A raw backup or a values export can contain passwords and tokens. Keep them private.",
     "",
+    "Restore (B, last option) puts a raw backup back over the whole NVS partition. It checks the file against "
+    "its manifest and only takes a backup of this device. The NVS as it was is saved as a new backup first, so "
+    "a restore can be undone the same way.",
+    "",
     "Keys",
     "; .  move      , /  page",
     "Enter  open    Esc Del  back",
     "/  find    S  sort    R  refresh",
     "V  show a hidden value",
     "E  edit    D  delete    A  advanced",
-    "B  backup and export",
+    "B  backup, export and restore",
     "Esc on the dashboard: exit (restart)",
 };
 

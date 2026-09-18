@@ -48,6 +48,7 @@ Other ESP32 devices, such as the LilyGo T-Deck Plus, may follow. The code keeps 
   - A JSON export with values.
   - A raw copy of the partition with a SHA-256 manifest.
   - Every file is read back and compared after writing.
+- **Restore.** Puts a raw backup of this device back over the whole NVS partition. The backup is checked against its manifest first, and the NVS as it was is saved as a new backup, so a restore can be undone the same way.
 - **Exit.** Restarts the device.
 
 ### Safety
@@ -133,7 +134,7 @@ On the Cardputer, the arrow legends are on the fn layer. Outside text fields, th
 | `E` | edit |
 | `D` | delete |
 | `A` | Advanced mode |
-| `B` | backup and export |
+| `B` | backup, export and restore |
 | `I` | help |
 
 The help screen (`I`) starts with the version and author, then explains entries, pages and why NVS can be full while a page is still physically empty.
@@ -145,7 +146,20 @@ The help screen (`I`) starts with the version and author, then explains entries,
 - **Names.** Files are numbered (`nvs-0001.json`, `nvs-0001-values.json`, `nvs-0001.bin`), because the device has no clock.
 - **Manifest.** It records the partition offset and size, entry statistics, device, chip, and the SHA-256 of the raw copy.
 
-There is no restore in 0.9.0. A raw backup is a plain partition image; `esptool write-flash 0x9000 nvs-0001.bin` puts it back.
+### Restoring a raw backup
+
+`B`, then **Restore raw backup**, lists the raw backups on the card, newest first. Choosing one shows the NVS usage then and now, and checks the backup before anything is written. A restore is refused when:
+
+- the manifest is missing, or the file does not match its size and SHA-256;
+- the backup was made for a different partition, or the NVS is encrypted;
+- the backup was made on another device (backups record a hash of the device's MAC address, never the address itself);
+- the file is not a valid NVS image, or it already matches the NVS byte for byte.
+
+Backups made by 0.9.0 did not record the device; they can still be restored, with a warning to use them only on the device they came from, because NVS holds that device's radio calibration.
+
+After a held Enter, NVS Manager saves the current NVS as a new raw backup, then writes the backup one 4 KiB sector at a time, reading each sector back. The result names the backup that holds the NVS as it was before. Do not switch the device off while it runs.
+
+A raw backup is a plain partition image, so `esptool write-flash 0x9000 nvs-NNNN.bin` also puts it back from a computer.
 
 ### Serial log
 
@@ -154,7 +168,7 @@ The USB serial port (115200 baud) reports the boot, the NVS statistics and each 
 ## Limitations
 
 - Blob values are read-only.
-- There is no restore, rename or bulk delete.
+- There is no rename or bulk delete, and a restore always puts back the whole partition, not single namespaces.
 - Namespaces without keys, and entries left by deleted namespaces, take space but cannot be listed. The dashboard shows how many entries they hold.
 - Only the partition labelled `nvs` is managed.
 - Encrypted NVS partitions are reported as such but have not been tested.

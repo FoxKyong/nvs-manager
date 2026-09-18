@@ -156,6 +156,23 @@ bool storageRead(const std::string &path, std::vector<uint8_t> &out) {
     return true;
 }
 
+bool storageList(const std::string &dir, std::vector<std::string> &names) {
+    names.clear();
+    if (!g_sdMounted) return false;
+    std::error_code ec;
+    std::filesystem::directory_iterator it(g_sdRoot + dir, ec);
+    for (; !ec && it != std::filesystem::directory_iterator(); it.increment(ec)) {
+        if (it->is_regular_file(ec)) names.push_back(it->path().filename().string());
+    }
+    return !ec;
+}
+
+// NVSM_DEVICE_ID lets a test pretend to be another device.
+std::string deviceId() {
+    const char *id = std::getenv("NVSM_DEVICE_ID");
+    return id != nullptr && *id != '\0' ? id : "desktop";
+}
+
 const char *deviceName() { return "Desktop (SDL)"; }
 
 lgfx::LovyanGFX &display() { return g_display; }
