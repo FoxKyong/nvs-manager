@@ -29,6 +29,8 @@ One firmware image runs on all three models.
 | M5Stack Cardputer v1.1 | under Launcher 2.9.1 |
 | M5Stack Cardputer ADV | under Launcher 2.9.1 |
 
+NVS Manager 1.0.0 also works under Launcher 3.0.0.
+
 Other ESP32 devices, such as the LilyGo T-Deck Plus, may follow. The code keeps everything device-specific behind one platform layer.
 
 ## What it does
@@ -85,7 +87,7 @@ Release files, from the [releases page](../../releases):
 
 [Launcher](https://github.com/bmorcelli/Launcher) installs the app into its own app partition. It keeps the NVS partition, so NVS Manager sees exactly the data the other apps use.
 
-**From Launcher's online catalog:** open `OTA`, find **NVS Manager for Cardputer & ADV** and install it. Launcher downloads the image published on M5Burner and writes only the app from it.
+**From Launcher's online catalog:** open `OTA`, find **NVS Manager for Cardputer & ADV** and install it. Launcher downloads the image published on M5Burner and writes only the app from it. Since November 2026 the catalog comes from the new web M5Burner; an older Launcher reads the same catalog.
 
 **From the SD card:**
 
@@ -115,7 +117,7 @@ The partition table keeps NVS at `0x9000` with `0x5000` bytes, as Launcher does,
 
 ### M5Burner
 
-The same full image is published in [M5Burner](https://docs.m5stack.com/en/uiflow/m5burner/intro) as **NVS Manager for Cardputer & ADV** (device type Cardputer). M5Burner writes it from `0x0`, so burning it there **erases the NVS partition** as well. To keep the existing data, install it through Launcher instead.
+The same full image is published in the web [M5Burner](https://burner.m5stack.com/) as **NVS Manager for Cardputer & ADV** (devices Cardputer and Cardputer ADV). M5Burner writes it from `0x0`, so burning it there **erases the NVS partition** as well. To keep the existing data, install it through Launcher instead.
 
 ## Using it
 
